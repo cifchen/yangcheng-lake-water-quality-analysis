@@ -1,6 +1,0 @@
-# Versions used to produce the reported random-forest figures.
-# Deterministic results (reconstruction, tie structure, Table 5) are version-independent.
-pandas>=2.0
-numpy>=1.24
-scikit-learn>=1.3,<1.9
-matplotlib>=3.7
