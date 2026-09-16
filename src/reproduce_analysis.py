@@ -1,14 +1,14 @@
 """
 Reproduce the analysis reported in:
 
-    Meng, X.; Tang, K.; Zheng, Y. Seasonal Shifts in Binding and Co-Binding Indicators of
-    Regulatory Water-Quality Classification: Separating Rule Recovery from Ecological
-    Inference at a National Monitoring Station in Yangcheng Lake, China.
+    Tang, K., Meng, X., & Zheng, Y. Seasonal Binding and Co-Binding in Regulatory
+    Water-Quality Classification: Separating Rule Recovery from Ecological Inference at
+    Yangcheng Lake, China. Submitted to Environmental Monitoring and Assessment, 2026.
 
 Usage
 -----
     pip install -r requirements.txt
-    python src/reproduce_analysis.py --csv data/yangcheng_lake_center_station.csv
+    python src/reproduce_analysis.py --csv data/yangcheng_lake_center_station_3187.csv
 
 The script prints every quantity cited in the manuscript and writes the analysis set,
 the tie-aware monthly table (Table 5) and the ablation table (Table 8) to ./outputs/.
