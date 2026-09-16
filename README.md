@@ -2,10 +2,9 @@
 
 Code for:
 
-> Tang, K.; Meng, X.; Zheng, Y. **Seasonal Shifts in Binding and Co-Binding Indicators of
-> Regulatory Water-Quality Classification: Separating Rule Recovery from Ecological
-> Inference at a National Monitoring Station in Yangcheng Lake, China.** Submitted to
-> *Water* (MDPI), 2026.
+> Tang, K., Meng, X., & Zheng, Y. **Seasonal Binding and Co-Binding in Regulatory Water-Quality
+> Classification: Separating Rule Recovery from Ecological Inference at Yangcheng Lake, China.**
+> Submitted to *Environmental Monitoring and Assessment*, 2026.
 
 ## What this repository does
 
