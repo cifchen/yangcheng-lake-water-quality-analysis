@@ -66,15 +66,9 @@ src/
   verify_source.py
   tune_random_forest.py
   make_figures.py
-psy_copies/
-  reproduce_analysis.psy
-  audit_diagnostics.psy
-  verify_source.psy
-  tune_random_forest.psy
-  make_figures.psy
 ```
 
-`*.py` files are the canonical executable Python scripts. The `*.psy` files are byte-equivalent text copies included only because they were requested; `.psy` is not the standard Python module extension and should not replace the `.py` files in normal execution.
+The `*.py` files in `src/` are the canonical executable Python scripts.
 
 ## Reproducibility environment
 
