@@ -1,6 +1,19 @@
+# Python
 __pycache__/
-*.pyc
-.ipynb_checkpoints/
+*.py[cod]
 .venv/
+venv/
+
+# Local outputs
 outputs/
-*.pkl
+rerun_outputs/
+figures/
+
+# Third-party source data: do not upload
+data/*.csv
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
