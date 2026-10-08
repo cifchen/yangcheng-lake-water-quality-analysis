@@ -1,71 +1,80 @@
-# Yangcheng Lake water-quality analysis
+# Audit before automation: Yangcheng Lake water-quality classification
 
 Code and reproducibility materials for:
 
-> Tang, K.; Meng, X.; Zheng, Y. Seasonal binding and co-binding in regulatory water-quality classification: Separating rule recovery from ecological inference at Yangcheng Lake, China. Manuscript (2026).
+> Tang K, Meng X, Zheng Y. *Audit before automation: a rule-benchmarked protocol for machine
+> learning in threshold-based water-quality classification, with evidence from Yangcheng
+> Lake, China.* Manuscript (2026).
 
 ## What this repository does
 
-Machine-learning classifiers are often trained on regulatory water-quality classes that are themselves assigned by comparing same-time measurements against fixed thresholds. When that is the case, a high accuracy score may mostly reflect recovery of the classification rule rather than independent predictive skill.
+Water-quality status is often assigned by a worst-indicator ("one-out, all-out") rule:
+each regulated indicator is graded against fixed thresholds and the poorest grade sets the
+class. A classifier trained on such classes, using the same concurrent measurements as
+inputs, is partly rediscovering the rule, so its accuracy says little on its own. The revised
+manuscript uses an audit-before-automation protocol with four diagnostics:
 
-This repository implements the evaluation sequence used in the manuscript:
+| Diagnostic | Question | Required implementation |
+| --- | --- | --- |
+| D1 Rule recovery | How much of the archived classification does the regulatory rule reproduce, and why do the remaining records disagree? | Core reconstruction plus audit-set diagnostics |
+| D2 Rule-benchmarked skill | What share of the rule's residual errors does a model resolve (SS<sub>R</sub> = 1 − E<sub>model</sub>/E<sub>rule</sub>, exact McNemar test)? | Rule/model paired comparison |
+| D3 Order-invariant attribution | Which indicators set the class when several tie at the worst grade? Equal-credit (Shapley) shares versus forced priority orders | Tie-aware and equal-credit attribution |
+| D4 Reliability by class and time | Are rare classes and later years handled reliably, and is a decline due to the model or to how labels were generated? | Repeated splits and rule-benchmarked temporal validation |
 
-1. **Rule reconstruction.** Grade dissolved oxygen, permanganate index, ammonia nitrogen, and total phosphorus against GB 3838-2002 and take the worst of the four. This deterministic benchmark reproduces 92.02% of the archived classes with no model fitting.
-2. **Tie-aware binding attribution.** Record which indicator or indicators attained the worst grade. Ties are retained rather than resolved by an arbitrary priority rule.
-3. **Feature ablation.** Quantify how much accuracy depends on the indicators that generate the rule.
-4. **Forward temporal validation.** Fit on 2021–2023 and test on 2024 and 2025 without refitting.
-
-## Headline results reproduced by the scripts
+## Headline results
 
 | Quantity | Value |
-|---|---:|
+| --- | ---: |
 | Records retrieved / analyzed | 8516 / 8173 |
-| Four-indicator reconstruction, exact agreement | 92.02% |
-| Agreement within one class | 96.72% |
-| Tuned random forest, held-out accuracy | 95.96% (+3.91 pp over the rule) |
-| Worst-grade ties | 2021 records (24.7%) |
-| Total phosphorus–permanganate index ties | 1869 records (22.9%) |
-| August: tied / TP–CODMn co-bound / uniquely TP-bound | 58.5% / 56.6% / 33.1% |
-| Forward accuracy, 2024 → 2025 | 96.66% → 88.71% |
+| Four-indicator rule (R4), exact agreement | 92.02% (audit set 652 records) |
+| R4 plus pH constraint on observed pH (R5) | 93.55% |
+| Audit set explained by pH excursions / reporting precision / invalid indicator values / near-limit TP | 233 / 198 / 80 / 77 records; 64 unexplained |
+| Archived Below Class V records with pH outside 6–9 | 233 of 274 |
+| Random forest (TP, COD<sub>Mn</sub>, pH), held-out accuracy | 95.96% vs 92.05% for R4 on the same records |
+| Rule-benchmarked skill score SS<sub>R4</sub> / SS<sub>R5</sub> | 0.49 / 0.36 |
+| Worst-grade ties | 2021 records (24.7%); August 58.5% |
+| August share credited to TP: equal credit / range over 24 priority orders | 62.2% / 33.1–91.6% |
+| Forward accuracy, model trained 2021–2023: 2024 → 2025 | 96.66% → 88.71% |
+| R4 agreement in the same years | 92.82% → 97.85% |
 
-## Quick start
+## Reproducibility environment
 
-```bash
-git clone https://github.com/cifchen/yangcheng-lake-water-quality-analysis.git
-cd yangcheng-lake-water-quality-analysis
-pip install -r requirements.txt
+The manuscript was verified with Python 3.13, pandas 2.2.3, NumPy 2.3.5,
+scikit-learn 1.8.0, SciPy 1.18.1, and Matplotlib 3.10.8. For a public archival
+release, `requirements.txt` should pin these exact package versions.
 
-# Obtain the source CSV from MoonAPI and save it as:
-# data/yangcheng_lake_center_station_3187.csv
-# See data/README.md for retrieval details and checksums.
+Random-forest results use fixed seeds (42 for the primary split and forests; 0–49 for repeated
+splits). Deterministic results (quality control, rule reconstruction, tie structure, attribution,
+and audit decomposition) do not depend on random seeds.
 
-python src/reproduce_analysis.py
-python src/make_figures.py
-```
+## Data provenance
 
-`reproduce_analysis.py` prints the reported analytical quantities and writes the analysis output files. `make_figures.py` regenerates the data-derived figures. Figures 1 and 2 of the manuscript are a study-area schematic and an analytical workflow diagram rather than computed plots.
+The analysis uses 8516 monitoring records retrieved on 15 July 2026 through the MoonAPI
+station-history page for the Yangcheng Lake Center Monitoring Station (station 3187), covering
+17 December 2020 to 5 January 2026. The source data are third-party records and are not
+redistributed here.
 
-## Reproducibility notes
+Source page:
 
-The deterministic steps (quality control, four-indicator reconstruction, tie structure, and Table 5) are designed to reproduce exactly when the same source file and pinned dependencies are used. Random-forest results can vary slightly across scikit-learn versions; use the versions in `requirements.txt` to reproduce the manuscript results.
+`https://moonapi.com/WaterQuality/station/history/id/3187.html`
 
-## Repository layout
+Analyzed-file SHA-256:
 
-```text
-data/README.md               retrieval instructions, checksums, column dictionary
-src/reproduce_analysis.py    analysis pipeline and reported quantities
-src/make_figures.py          regenerates Figures 3–5
-requirements.txt             pinned dependencies
-outputs/                     generated locally (git-ignored)
-```
+`3b9e2ab7a2d6ef0c2f9cd0209fca41656c8cb0d75482a9fd0a7c69107f924642`
 
-## Data
+The repository should provide the retrieval notes, column dictionary, and content-verification
+instructions needed to compare a newly retrieved copy with the analyzed file.
 
-The source records were retrieved from the MoonAPI open-data platform, which aggregates and republishes automatic-monitoring data from China's national surface-water monitoring network. They are not redistributed here because reuse is governed by the platform's access and reuse conditions. `data/README.md` provides retrieval details, checksums, and the column dictionary.
+## Figures
 
-## License
+Figures 1 (protocol) and 2 (study-area schematic) are author-drawn. Data-derived figures should
+be regenerated from the analysis scripts, with final publication styling applied separately.
 
-The code is released under the MIT License (`LICENSE`). The license covers the code only and does not extend to the monitoring records obtained separately from MoonAPI.
+## Citation and licence
+
+Please cite the article once publication details are available. The code is released under the
+MIT License. The license covers the code only and does not extend to third-party monitoring
+records obtained separately from MoonAPI.
 
 ## Contact
 
