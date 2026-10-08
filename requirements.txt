@@ -1,6 +1,6 @@
-# Exact package versions used for the manuscript analyses.
+# Exact package versions used by the final validated environment.
 pandas==2.2.3
 numpy==2.3.5
 scikit-learn==1.8.0
-scipy==1.18.1
+scipy==1.17.0
 matplotlib==3.10.8

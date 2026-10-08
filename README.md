@@ -1,76 +1,103 @@
 # Audit before automation: Yangcheng Lake water-quality classification
 
-Code, environment, and data-provenance materials accompanying:
+Code and reproducibility materials for:
 
 > Tang K, Meng X, Zheng Y. *Audit before automation: a rule-benchmarked protocol for machine learning in threshold-based water-quality classification, with evidence from Yangcheng Lake, China.* Manuscript (2026).
 
-## Study in brief
+## Purpose
 
-Water-quality status is often assigned by a worst-indicator ("one-out, all-out") rule. When a machine-learning classifier is trained on archived regulatory classes using the same concurrent measurements that contribute to those classes, high accuracy can partly reflect recovery of the regulatory rule rather than independent predictive information. The manuscript evaluates this issue using an audit-before-automation framework and a Yangcheng Lake monitoring archive.
+Water-quality status can be assigned by a worst-indicator (“one-out, all-out”) rule. A classifier trained on the same concurrent measurements may therefore partly recover the regulatory rule rather than provide independent predictive skill. The repository implements four diagnostics:
+
+| Diagnostic | Main question | Script |
+| --- | --- | --- |
+| D1 Rule recovery | How much of the archived classification does the regulatory rule reproduce, and why do residual disagreements occur? | `src/reproduce_analysis.py`, `src/audit_diagnostics.py` |
+| D2 Rule-benchmarked skill | How much of the rule’s residual error does the model resolve? | `src/audit_diagnostics.py` |
+| D3 Order-invariant attribution | Which indicators set the class when several indicators tie at the worst grade? | `src/reproduce_analysis.py`, `src/audit_diagnostics.py` |
+| D4 Reliability by class and time | Are rare classes and later years handled reliably? | `src/reproduce_analysis.py`, `src/audit_diagnostics.py` |
 
 ## Headline results
 
 | Quantity | Value |
 | --- | ---: |
-| Records retrieved / analyzed | 8516 / 8173 |
-| Four-indicator rule (R4), exact agreement | 92.02% (audit set: 652 records) |
+| Records retrieved / analysed | 8516 / 8173 |
+| Four-indicator rule (R4), exact agreement | 92.02% |
 | R4 plus pH constraint on observed pH (R5) | 93.55% |
-| Audit-set mechanisms: pH excursions / reporting precision / invalid rule-indicator values / near-limit TP | 233 / 198 / 80 / 77 records; 64 unexplained |
-| Archived Below Class V records with observed pH outside 6–9 | 233 of 274 |
-| Random forest (TP, CODMn, pH), held-out accuracy | 95.96% vs 92.05% for R4 on the same records |
-| Rule-benchmarked skill score SSR4 / SSR5 | 0.49 / 0.36 |
-| Worst-grade ties | 2021 records (24.7%); August 58.5% |
-| August TP attribution: equal credit / range across 24 forced priority orders | 62.2% / 33.1–91.6% |
-| Forward accuracy, model trained on 2021–2023: 2024 → 2025 | 96.66% → 88.71% |
-| R4 agreement in the same years | 92.82% → 97.85% |
+| Random forest (TP, CODMn, pH), held-out accuracy | 95.96% |
+| Worst-grade ties | 2021 records (24.7%) |
+| August tie share | 58.5% |
+| Forward accuracy, 2024 → 2025 | 96.66% → 88.71% |
+
+## Quick start
+
+```bash
+git clone https://github.com/cifchen/yangcheng-lake-water-quality-analysis.git
+cd yangcheng-lake-water-quality-analysis
+python -m venv .venv
+pip install -r requirements.txt
+
+# Obtain the source CSV separately (see data/README.md) and save it as:
+# data/yangcheng_lake_center_station_3187.csv
+
+python src/verify_source.py
+python src/reproduce_analysis.py
+python src/audit_diagnostics.py
+python src/make_figures.py
+
+# Optional: rerun the full 180-combination grid search
+python src/tune_random_forest.py
+```
+
+The scripts accept `--csv` and, where applicable, `--outdir`. Generated outputs are written locally and are excluded by `.gitignore`.
+
+## Repository layout
+
+```text
+README.md
+requirements.txt
+.gitignore
+LICENSE
+CITATION.cff
+run_all.py
+data/
+  README.md
+src/
+  reproduce_analysis.py
+  audit_diagnostics.py
+  verify_source.py
+  tune_random_forest.py
+  make_figures.py
+psy_copies/
+  reproduce_analysis.psy
+  audit_diagnostics.psy
+  verify_source.psy
+  tune_random_forest.psy
+  make_figures.psy
+```
+
+`*.py` files are the canonical executable Python scripts. The `*.psy` files are byte-equivalent text copies included only because they were requested; `.psy` is not the standard Python module extension and should not replace the `.py` files in normal execution.
 
 ## Reproducibility environment
 
-The manuscript analyses were verified with:
+The final validated environment file pins:
 
 - Python 3.13
 - pandas 2.2.3
 - NumPy 2.3.5
 - scikit-learn 1.8.0
-- SciPy 1.18.1
+- SciPy 1.17.0
 - Matplotlib 3.10.8
 
-These exact package versions are listed in the root `requirements.txt`.
+Random-forest procedures use fixed seeds (42 for the primary split/forests and 0–49 for repeated splits).
 
-Random-forest results use fixed seeds (42 for the primary split and forests; 0–49 for repeated splits). Deterministic quantities such as rule reconstruction and tie structure do not depend on random seeds.
+## Source data
 
-## Data provenance
+The monitoring records were retrieved through the MoonAPI open-data platform. The raw third-party CSV is not redistributed in the GitHub upload package. See `data/README.md` for the fixed station-history URL, retrieval metadata, checksums, and column dictionary.
 
-The analysis uses 8516 monitoring records retrieved on 15 July 2026 through the MoonAPI station-history page for the Yangcheng Lake Center Monitoring Station (station 3187), covering 17 December 2020 to 5 January 2026. The third-party source records are not redistributed in this repository.
+## Citation and license
 
-Source page:
+No GitHub release number, Zenodo DOI, or repository DOI is claimed in this package. Add one only after an actual archived release/DOI exists.
 
-`https://moonapi.com/WaterQuality/station/history/id/3187.html`
-
-Analyzed-file SHA-256:
-
-`3b9e2ab7a2d6ef0c2f9cd0209fca41656c8cb0d75482a9fd0a7c69107f924642`
-
-Detailed retrieval notes, file metadata, checksums, and the column dictionary are provided in `data/README.md`.
-
-## Repository contents relevant to the manuscript
-
-- `requirements.txt` — exact Python package versions used for the reported analyses
-- `data/README.md` — source URL, retrieval date, file metadata, checksums, and column dictionary
-- `src/reproduce_analysis.py` — core reconstruction, binding, random-forest, repeated-split, and sensitivity analyses
-- `src/make_figures.py` — data-derived figure generation available in the repository
-
-Figures 1 and 2 in the manuscript are author-drawn schematics. Final publication styling of data-derived figures may be applied separately from the analysis scripts.
-
-## Data and code availability
-
-The source monitoring records are third-party data and are not redistributed. A newly obtained file can be checked against the analyzed file using the provenance metadata in `data/README.md`.
-
-Core analysis and figure-generation code is publicly available in this repository. The code is released under the MIT License; that license does not extend to the third-party monitoring records.
-
-## Citation
-
-Please cite the article once publication details are available. Until then, cite the manuscript title above when referring to this repository.
+Code is released under the MIT License. The license covers the code only and does not extend to third-party monitoring records obtained separately from MoonAPI.
 
 ## Contact
 

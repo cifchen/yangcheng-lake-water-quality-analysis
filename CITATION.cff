@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated manuscript and this repository."
+title: "Yangcheng Lake water-quality classification audit and reproducibility code"
+type: software
+authors:
+  - family-names: Tang
+    given-names: Kingzoo
+    orcid: "https://orcid.org/0000-0002-2228-1195"
+  - family-names: Meng
+    given-names: Xiaolu
+    orcid: "https://orcid.org/0009-0001-6023-3098"
+  - family-names: Zheng
+    given-names: Yiting
+repository-code: "https://github.com/cifchen/yangcheng-lake-water-quality-analysis"
+license: MIT
