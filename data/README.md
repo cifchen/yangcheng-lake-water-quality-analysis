@@ -2,39 +2,37 @@
 
 ## Source records
 
-The analysis uses one file, which is **not redistributed in this repository**:
+The analysis uses one source file, which is **not redistributed in this repository**:
 
     data/yangcheng_lake_center_station_3187.csv
 
-It holds 8517 rows of automatic-monitoring data from the Yangcheng Lake Center Monitoring
-Station (station 3187), covering 17 December 2020 to 5 January 2026, and was retrieved from
-the MoonAPI open-data platform, which aggregates and republishes automatic-monitoring records
-from China's national surface-water monitoring network:
+It contains **8516 monitoring records** from the Yangcheng Lake Center Monitoring Station
+(station 3187), covering 17 December 2020 to 5 January 2026. The CSV also contains two header
+rows: field names and units. The file was retrieved through the MoonAPI station-history page on
+15 July 2026:
 
-    https://moonapi.com/WaterQuality/station/history/id/3187.html   (retrieved 15 July 2026)
+    https://moonapi.com/WaterQuality/station/history/id/3187.html
 
-Reuse of those records is governed by the platform's access and reuse conditions, which the
-authors do not relicense. Obtain your own copy from MoonAPI and save it at the path above;
-both scripts then run without further configuration.
+The authors do not redistribute or relicense the third-party source records. Obtain a fresh copy
+from the source page and save it at the path above before running the analysis.
 
-## Verifying that you have the same file
+## Verifying the analyzed file
 
-The file used for the published results has these properties. Checking them confirms that a
-freshly downloaded copy is byte-identical to the one analysed in the paper.
+The file used for the manuscript has these properties:
 
     SHA-256  3b9e2ab7a2d6ef0c2f9cd0209fca41656c8cb0d75482a9fd0a7c69107f924642
     MD5      1162cf2a503404b8d615f1f19b0a809b
     Size     1,656,680 bytes
-    Rows     8517 data rows plus a two-row header
+    Records  8516 monitoring records plus a two-row header
 
-On Linux or macOS:
-
-    shasum -a 256 data/yangcheng_lake_center_station_3187.csv
+A dynamically served source page may not be retrievable by every automated audit client.
+Reproducibility therefore relies on the fixed station-history URL, retrieval date, file size,
+cryptographic checksums, and column dictionary in addition to a fresh source export.
 
 ## File layout
 
-The CSV has a two-row header: row 1 holds the field names and row 2 holds units. Both scripts
-skip row 2. Relevant columns:
+The CSV has a two-row header: row 1 holds field names and row 2 holds units. Analysis scripts
+skip the units row. Relevant columns are:
 
 | Column | Meaning |
 | --- | --- |
@@ -52,12 +50,5 @@ skip row 2. Relevant columns:
 | `藻密度` | algal density (cells/L) |
 | `水质` | archived water-quality class (Ⅰ–劣Ⅴ, or UNKNOWN) |
 
-Invalid or absent measurements appear as empty fields. The class field carries `UNKNOWN` in
-343 records; those records are dropped, leaving the 8173-record analysis set.
-
-## Derived data
-
-`outputs/analysis_set.csv` is written on the first run of `src/reproduce_analysis.py`. It is
-the post-quality-control analysis set with the reconstructed grade, the tie count and the
-binding-indicator attribution appended. It is git-ignored because it is fully regenerable
-from the source file.
+The class field contains `UNKNOWN` in 343 records; those records are excluded, leaving the
+8173-record analysis set.
