@@ -25,7 +25,7 @@ from sklearn.metrics import accuracy_score
 
 from reproduce_analysis import (
     BEST, BINDER_NAMES, FORCED_ORDER, INDICATORS, LABELS, NON_RULE, RETAINED, SEED,
-    TP_LIMITS, build_forest, decimal_places, load_archive, primary_split, reconstruct,
+    TIME_COL, TP_LIMITS, build_forest, load_archive, primary_split, reconstruct,
 )
 
 
@@ -47,17 +47,34 @@ def skill_score(model_errors: int, rule_errors: int) -> float:
     return 1.0 - model_errors / rule_errors
 
 
-def tp_low_resolution_contains_limit(raw_value: str) -> bool:
-    """Mechanism C: source TP published at 0.01 mg/L resolution and interval contains a limit."""
-    dp = decimal_places(raw_value)
-    if dp != 2:
+def _numeric_decimals(value: float) -> float:
+    """Decimals actually carried by a published value (trailing zeros ignored)."""
+    if pd.isna(value) or value == 0:
+        return np.nan
+    for d in range(7):
+        if abs(round(float(value), d) - float(value)) < 1e-9:
+            return d
+    return 7
+
+
+def coarse_tp_months(df: pd.DataFrame) -> pd.Series:
+    """Calendar months in which TP was published at 0.01 mg/L resolution.
+
+    The CSV pads every value to five decimals, so the resolution cannot be read from the
+    string of a single record. A month counts as coarse when no TP value in that month
+    carries more than two decimals.
+    """
+    month = df[TIME_COL].dt.to_period("M")
+    dps = df["source_总磷"].apply(_numeric_decimals)
+    return dps.groupby(month.values).max() <= 2
+
+
+def tp_limit_in_rounding_interval(value: float) -> bool:
+    """A class limit lies in [value - 0.005, value + 0.005) for a value published at 0.01 mg/L."""
+    if pd.isna(value):
         return False
-    try:
-        x = float(raw_value)
-    except (TypeError, ValueError):
-        return False
-    lo, hi = x - 0.005, x + 0.005
-    return bool(np.any((TP_LIMITS >= lo - 1e-12) & (TP_LIMITS <= hi + 1e-12)))
+    x = float(value)
+    return bool(np.any((x - 0.005 <= TP_LIMITS) & (TP_LIMITS < x + 0.005)))
 
 
 def tp_near_limit(value: float, frac: float = 0.05) -> bool:
@@ -89,7 +106,9 @@ def decompose_audit_set(df: pd.DataFrame) -> pd.DataFrame:
     audit.loc[b, "mechanism"] = "B_invalid_rule_indicator"
 
     # C: 0.01 mg/L TP publication resolution whose rounding interval straddles a class limit.
-    c_candidate = audit["raw_总磷"].apply(tp_low_resolution_contains_limit).to_numpy()
+    coarse = coarse_tp_months(df)
+    in_coarse_month = audit[TIME_COL].dt.to_period("M").map(coarse).fillna(False).astype(bool).to_numpy()
+    c_candidate = in_coarse_month & audit["source_总磷"].apply(tp_limit_in_rounding_interval).to_numpy()
     c = (audit["mechanism"] == "E_unexplained").to_numpy() & c_candidate
     audit.loc[c, "mechanism"] = "C_reporting_precision"
 
