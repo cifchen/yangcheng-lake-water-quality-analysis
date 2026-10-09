@@ -10,6 +10,8 @@ It contains **8516 monitoring records** from the Yangcheng Lake Center Monitorin
 
 `https://moonapi.com/WaterQuality/station/history/id/3187.html`
 
+**The analyzed export window was 17 December 2020 to 5 January 2026; the retrieval date (15 July 2026) records when the file was downloaded and does not indicate the end of the observation window.**
+
 The authors do not redistribute or relicense the third-party source records. Obtain the file from the source and save it at the path above before running the analysis.
 
 ## Identity of the analyzed file
